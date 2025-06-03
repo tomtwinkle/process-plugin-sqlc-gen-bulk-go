@@ -27,7 +27,14 @@ The plugin supports the following configuration options:
 
 ## Usage
 
-### 1. Configure sqlc.yaml
+### 1. Install the plugin
+To use this plugin, you need to install it first. You can do this by running the following command:
+
+```shell
+ go install github.com/tomtwinkle/sqlc-plugin-bulk-go@latest
+```
+
+### 2. Configure sqlc.yaml
 
 Add the plugin to your sqlc configuration:
 
@@ -36,10 +43,7 @@ version: "2"
 plugins:
   - name: bulkinsert
     process:
-      cmd: "go run github.com/tomtwinkle/sqlc-plugin-bulk-go"
-    options:
-      package: "db" # Replace with your database package name
-
+      cmd: "sqlc-plugin-bulk-go"
 sql:
   - schema: "path/to/schema.sql"
     queries: "path/to/query.sql"
@@ -47,9 +51,18 @@ sql:
     codegen:
       - plugin: bulkinsert
         out: "path/to/output"
+        options:
+          package: "db" # Replace with your database package name
+  - schema: "path/to/schema.sql"
+    queries: "path/to/query.sql"
+    engine: "postgresql" # or "mysql"
+    gen:
+      go:
+         # sqlc-gen-go is the default codegen for sqlc
+         # https://github.com/sqlc-dev/sqlc-gen-go
 ```
 
-### 2. Generate code
+### 3. Generate code
 
 Run sqlc to generate your code:
 
@@ -57,7 +70,7 @@ Run sqlc to generate your code:
 sqlc generate
 ```
 
-### 3. Use the generated bulk insert functions
+### 4. Use the generated bulk insert functions
 
 For each INSERT query in your sqlc configuration, a corresponding bulk insert function will be generated. For example, if you have a query named `CreateUser`, a `BulkCreateUser` function will be generated.
 
