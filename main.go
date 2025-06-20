@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 
 	"github.com/sqlc-dev/plugin-sdk-go/codegen"
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 const (
 	generateFileName = "bulk.sql.go"

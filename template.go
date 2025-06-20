@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"embed"
 	"fmt"
 	"go/format"
 	"strconv"
@@ -13,9 +12,6 @@ import (
 
 	"github.com/sqlc-dev/plugin-sdk-go/sdk"
 )
-
-//go:embed templates/*
-var templates embed.FS
 
 func executeTemplate(
 	_ context.Context, templateName string, data any,

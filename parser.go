@@ -5,13 +5,12 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"os"
 )
 
 // parseGoCode parses a Go source file and extracts the code of a specific function by its name.
 // It returns the function code as a byte slice or an error if the function is not found.
 func parseGoCode(sourceFile string, targetFuncName string) ([]byte, error) {
-	srcBytes, err := os.ReadFile(sourceFile)
+	srcBytes, err := templates.ReadFile(sourceFile)
 	if err != nil {
 		return nil, err
 	}
