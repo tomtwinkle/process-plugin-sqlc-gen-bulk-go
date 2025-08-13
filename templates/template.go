@@ -58,8 +58,14 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 		trimmedQuery = trimmedQuery[:len(trimmedQuery)-1]
 	}
 
+	onDuplicateKeyIndex := strings.Index(strings.ToUpper(trimmedQuery), "ON DUPLICATE")
+	trimmedQueryDuplicateKey := trimmedQuery
+	if onDuplicateKeyIndex >= 0 {
+		trimmedQueryDuplicateKey = trimmedQuery[:onDuplicateKeyIndex]
+	}
+
 	// search "VALUES" (case insensitive)
-	valuesUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "VALUES")
+	valuesUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQueryDuplicateKey), "VALUES")
 	if valuesUpperIndex == -1 {
 		return "", fmt.Errorf("invalid query format: VALUES clause not found in original query: %s", originalQuery)
 	}

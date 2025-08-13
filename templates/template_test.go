@@ -150,6 +150,18 @@ func TestBuildBulkInsertQuery(t *testing.T) {
 					}
 			},
 		},
+		"valid:upsert": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name);",
+						numArgs:         3,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?),(?,?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name)",
+						err:   nil,
+					}
+			},
+		},
 	}
 
 	for name, tc := range tests {
