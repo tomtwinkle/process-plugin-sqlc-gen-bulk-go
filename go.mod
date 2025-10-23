@@ -1,4 +1,4 @@
-module github.com/tomtwinkle/sqlc-plugin-bulk-go
+module github.com/tomtwinkle/process-plugin-sqlc-gen-bulk-go
 
 go 1.24
 

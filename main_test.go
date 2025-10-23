@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/sqlc-dev/plugin-sdk-go/plugin"
-	sqlcpluginbulkgo "github.com/tomtwinkle/sqlc-plugin-bulk-go"
+	sqlcpluginbulkgo "github.com/tomtwinkle/process-plugin-sqlc-gen-bulk-go"
 	"gotest.tools/v3/assert"
 )
 
