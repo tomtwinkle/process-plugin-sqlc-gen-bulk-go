@@ -1,4 +1,4 @@
-# sqlc-plugin-bulk-go
+# process-plugin-sqlc-gen-bulk-go
 
 A [sqlc](https://github.com/sqlc-dev/sqlc) plugin that automatically generates bulk insert functions for your existing sqlc-generated BULK INSERT queries.
 
@@ -31,7 +31,7 @@ The plugin supports the following configuration options:
 To use this plugin, you need to install it first. You can do this by running the following command:
 
 ```shell
- go install github.com/tomtwinkle/sqlc-plugin-bulk-go@latest
+ go install github.com/tomtwinkle/process-plugin-sqlc-gen-bulk-go@latest
 ```
 
 ### 2. Configure sqlc.yaml
@@ -43,7 +43,7 @@ version: "2"
 plugins:
   - name: bulkinsert
     process:
-      cmd: "sqlc-plugin-bulk-go"
+      cmd: "process-plugin-sqlc-gen-bulk-go"
 sql:
   - schema: "path/to/schema.sql"
     queries: "path/to/query.sql"
