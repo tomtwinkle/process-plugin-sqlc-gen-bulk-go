@@ -67,6 +67,7 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 	// Use LastIndex to find the main clause
 	onDuplicateUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "ON DUPLICATE KEY UPDATE")
 	onConflictUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "ON CONFLICT")
+	returningUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "RETURNING")
 
 	// Find the earliest starting position of any suffix keyword
 	suffixBoundary := len(trimmedQuery)
@@ -75,6 +76,9 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 	}
 	if onConflictUpperIndex != -1 && onConflictUpperIndex < suffixBoundary {
 		suffixBoundary = onConflictUpperIndex
+	}
+	if returningUpperIndex != -1 && returningUpperIndex < suffixBoundary {
+		suffixBoundary = returningUpperIndex
 	}
 
 	if suffixBoundary < len(trimmedQuery) {
