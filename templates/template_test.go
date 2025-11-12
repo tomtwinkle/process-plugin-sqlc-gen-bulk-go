@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -55,6 +56,52 @@ func TestExtractFieldValues(t *testing.T) {
 							"value2", 84, false, 2.71, timeNow,
 						},
 						err: nil,
+					}
+			},
+		},
+		"pointer slice": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				type TestStruct struct {
+					Field1 string
+					Field2 int
+				}
+				return Args{
+						args: []any{
+							&TestStruct{"value1", 42},
+							&TestStruct{"value2", 84},
+						},
+						paramFieldNames: []string{"Field1", "Field2"},
+					}, Expected{
+						fieldValues: []any{
+							"value1", 42,
+							"value2", 84,
+						},
+						err: nil,
+					}
+			},
+		},
+		"error: field not found": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				type TestStruct struct {
+					Field1 string
+				}
+				return Args{
+						args:            []any{TestStruct{"value1"}},
+						paramFieldNames: []string{"NonExistentField"},
+					}, Expected{
+						fieldValues: nil,
+						err:         errors.New("field 'NonExistentField' not found"),
+					}
+			},
+		},
+		"error: not a struct slice": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						args:            []any{"string1", "string2"},
+						paramFieldNames: []string{"Field1"},
+					}, Expected{
+						fieldValues: nil,
+						err:         errors.New("is not a struct or pointer to struct"),
 					}
 			},
 		},
@@ -147,6 +194,42 @@ func TestBuildBulkInsertQuery(t *testing.T) {
 					}, Expected{
 						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?),(?,?) ON DUPLICATE KEY UPDATE id = id",
 						err:   nil,
+					}
+			},
+		},
+		"error: numArgs is zero": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?);",
+						numArgs:         0, // 0
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "",
+						err:   errors.New("number of arguments (rows) for bulk insert cannot be zero"),
+					}
+			},
+		},
+		"error: numParamsPerArg is zero": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?);",
+						numArgs:         3,
+						numParamsPerArg: 0, // 0
+					}, Expected{
+						query: "",
+						err:   errors.New("number of parameters per argument (columns) for bulk insert cannot be zero"),
+					}
+			},
+		},
+		"error: VALUES clause not found": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) SET id = ?, name = ?;", // VALUES がない
+						numArgs:         3,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "",
+						err:   errors.New("VALUES clause not found"),
 					}
 			},
 		},
