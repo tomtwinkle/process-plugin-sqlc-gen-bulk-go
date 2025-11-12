@@ -149,6 +149,42 @@ func TestBuildBulkInsertQuery(t *testing.T) {
 					}
 			},
 		},
+		"valid:upsert": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name);",
+						numArgs:         3,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?),(?,?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name)",
+						err:   nil,
+					}
+			},
+		},
+		"valid:upsert (ON CONFLICT)": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
+						err:   nil,
+					}
+			},
+		},
+		"valid:upsert (ON CONFLICT) case-insensitive": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "insert into users (id, name) values (?, ?) on conflict (id) do nothing;",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "insert into users (id, name) VALUES (?,?),(?,?) on conflict (id) do nothing",
+						err:   nil,
+					}
+			},
+		},
 		"valid:Squeeze spaces": {
 			arrange: func(t *testing.T) (Args, Expected) {
 				return Args{

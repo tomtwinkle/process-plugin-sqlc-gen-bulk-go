@@ -58,8 +58,37 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 		trimmedQuery = trimmedQuery[:len(trimmedQuery)-1]
 	}
 
-	// search "VALUES" (case insensitive)
-	valuesUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "VALUES")
+	// Find the start of the suffix (e.g., "ON DUPLICATE", "ON CONFLICT")
+	// We must do this *before* searching for "VALUES" to avoid matching "VALUES()"
+	// functions inside the suffix.
+	var querySuffixStr string
+	var queryWithoutSuffix string
+
+	// Use LastIndex to find the main clause
+	onDuplicateUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "ON DUPLICATE KEY UPDATE")
+	onConflictUpperIndex := strings.LastIndex(strings.ToUpper(trimmedQuery), "ON CONFLICT")
+
+	// Find the earliest starting position of any suffix keyword
+	suffixBoundary := len(trimmedQuery)
+	if onDuplicateUpperIndex != -1 {
+		suffixBoundary = onDuplicateUpperIndex
+	}
+	if onConflictUpperIndex != -1 && onConflictUpperIndex < suffixBoundary {
+		suffixBoundary = onConflictUpperIndex
+	}
+
+	if suffixBoundary < len(trimmedQuery) {
+		// Suffix found
+		queryWithoutSuffix = trimmedQuery[:suffixBoundary]
+		querySuffixStr = " " + strings.TrimSpace(trimmedQuery[suffixBoundary:])
+	} else {
+		// No suffix
+		queryWithoutSuffix = trimmedQuery
+		querySuffixStr = ""
+	}
+
+	// search "VALUES" (case insensitive) in the part before the suffix
+	valuesUpperIndex := strings.LastIndex(strings.ToUpper(queryWithoutSuffix), "VALUES")
 	if valuesUpperIndex == -1 {
 		return "", fmt.Errorf("invalid query format: VALUES clause not found in original query: %s", originalQuery)
 	}
@@ -69,28 +98,11 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 	// Add "VALUES" to this
 	queryPrefixStr := strings.TrimSpace(trimmedQuery[:valuesUpperIndex]) + " VALUES "
 
-	// Find the suffix of the query (e.g., "ON DUPLICATE KEY UPDATE ...")
-	// The suffix starts after the original placeholder, e.g., after `VALUES (?, ?)`
-	var querySuffixStr string
-	// Start searching after the "VALUES" keyword
-	searchStartIndex := valuesUpperIndex + len("VALUES")
-	// Find the first closing parenthesis ')' after the "VALUES" clause
-	firstClosingParenIndex := strings.Index(trimmedQuery[searchStartIndex:], ")")
-
-	if firstClosingParenIndex != -1 {
-		// The suffix is the part of the string after the closing parenthesis.
-		// We add 1 to skip the ')' character itself.
-		suffixStartIndex := searchStartIndex + firstClosingParenIndex + 1
-		if suffixStartIndex < len(trimmedQuery) {
-			querySuffixStr = " " + strings.TrimSpace(trimmedQuery[suffixStartIndex:])
-		}
-	}
-
 	var queryBuilder strings.Builder
 	queryBuilder.WriteString(queryPrefixStr)
 
 	valueStrings := make([]string, numArgs)
-	for i := 0; i < numArgs; i++ {
+	for i := range numArgs {
 		placeholders := make([]string, numParamsPerArg)
 		for j := 0; j < numParamsPerArg; j++ {
 			placeholders[j] = "?"
