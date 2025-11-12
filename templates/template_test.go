@@ -161,6 +161,30 @@ func TestBuildBulkInsertQuery(t *testing.T) {
 					}
 			},
 		},
+		"valid:upsert (ON DUPLICATE KEY UPDATE)": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name);",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?) ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name)",
+						err:   nil,
+					}
+			},
+		},
+		"valid:upsert (ON DUPLICATE KEY UPDATE) case-insensitive": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "insert into users (id, name) values (?, ?) on duplicate key update id = values(id), name = values(name);",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "insert into users (id, name) VALUES (?,?),(?,?) on duplicate key update id = values(id), name = values(name)",
+						err:   nil,
+					}
+			},
+		},
 		"valid:upsert (ON CONFLICT)": {
 			arrange: func(t *testing.T) (Args, Expected) {
 				return Args{
@@ -181,6 +205,30 @@ func TestBuildBulkInsertQuery(t *testing.T) {
 						numParamsPerArg: 2,
 					}, Expected{
 						query: "insert into users (id, name) VALUES (?,?),(?,?) on conflict (id) do nothing",
+						err:   nil,
+					}
+			},
+		},
+		"valid:RETURNING clause": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) RETURNING id;",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?) RETURNING id",
+						err:   nil,
+					}
+			},
+		},
+		"valid:RETURNING clause with ON CONFLICT": {
+			arrange: func(t *testing.T) (Args, Expected) {
+				return Args{
+						originalQuery:   "INSERT INTO users (id, name) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name RETURNING id;",
+						numArgs:         2,
+						numParamsPerArg: 2,
+					}, Expected{
+						query: "INSERT INTO users (id, name) VALUES (?,?),(?,?) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name RETURNING id",
 						err:   nil,
 					}
 			},
