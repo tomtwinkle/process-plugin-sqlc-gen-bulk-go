@@ -16,7 +16,7 @@ func extractFieldValues[T any](args []T, paramFieldNames []string) ([]any, error
 
 	for i, arg := range args {
 		rv := reflect.ValueOf(arg)
-		if rv.Kind() == reflect.Ptr {
+		if rv.Kind() == reflect.Pointer {
 			rv = rv.Elem()
 		}
 
@@ -108,7 +108,7 @@ func buildBulkInsertQuery(originalQuery string, numArgs int, numParamsPerArg int
 	valueStrings := make([]string, numArgs)
 	for i := range numArgs {
 		placeholders := make([]string, numParamsPerArg)
-		for j := 0; j < numParamsPerArg; j++ {
+		for j := range numParamsPerArg {
 			placeholders[j] = "?"
 		}
 		valueStrings[i] = fmt.Sprintf("(%s)", strings.Join(placeholders, ","))
