@@ -75,9 +75,9 @@ func snakeToPascalCase(snakeStr string) string {
 	}
 
 	var result strings.Builder
-	parts := strings.Split(snakeStr, "_")
+	parts := strings.SplitSeq(snakeStr, "_")
 
-	for _, part := range parts {
+	for part := range parts {
 		if part == "" {
 			continue
 		}
